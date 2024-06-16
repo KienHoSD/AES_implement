@@ -6,7 +6,7 @@ This repository contains an implementation of the Advanced Encryption Standard (
 
 To use this implementation, follow these steps:
 
-1. Clone the repository: `git clone https://github.com/your-username/AES_implement.git`
+1. Clone the repository: `git clone https://github.com/KienHoSD/AES_implement.git`
 2. Navigate to the project directory: `cd AES_implement`
 3. Build the project using the provided Makefile: `make`
 4. Run the AES encryption/decryption program: `./aes`
