@@ -8,12 +8,15 @@ SRC_DIR := src
 BUILD_DIR := build
 LIB_DIR := lib
 BIN_DIR := bin
+INCLUDE_DIR := include
+INCLUDE_AESIMP_DIR := $(INCLUDE_DIR)/aesimp
 TEST_DIR := test
 BENCHMARK_DIR := benchmark
 
 # Source files
 # List your source files here
 SRC := $(wildcard $(SRC_DIR)/*.cpp)
+HDR := $(wildcard $(SRC_DIR)/*.h)
 
 # Object files
 # Generates .o files in the build directory
@@ -33,7 +36,7 @@ BENCHMARK_SRC := $(wildcard $(BENCHMARK_DIR)/*.cpp)
 BENCHMARK_BIN := $(BENCHMARK_SRC:$(BENCHMARK_DIR)/%.cpp=$(BIN_DIR)/%)
 
 # Default target
-all: $(STATIC_LIB) $(SHARED_LIB) test_binaries
+all: $(STATIC_LIB) $(SHARED_LIB) test_binaries copy_headers
 
 # Static library target
 $(STATIC_LIB): $(OBJ) | $(LIB_DIR)
@@ -58,30 +61,29 @@ $(BIN_DIR)/%: $(TEST_DIR)/%.cpp | $(BIN_DIR)
 $(BIN_DIR)/%: $(BENCHMARK_DIR)/%.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) -o $@ $< $(STATIC_LIB)
 
-# Create lib directory if it doesn't exist
-$(LIB_DIR):
-	mkdir -p $(LIB_DIR)
+# Create directories if they don't exist
+$(LIB_DIR) $(BUILD_DIR) $(BIN_DIR) $(INCLUDE_DIR) $(INCLUDE_AESIMP_DIR):
+	mkdir -p $@
 
-# Create build directory if it doesn't exist
-$(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
-
-# Create bin directory if it doesn't exist
-$(BIN_DIR):
-	mkdir -p $(BIN_DIR)
+# Copy header files
+copy_headers: $(HDR) | $(INCLUDE_AESIMP_DIR)
+	cp $^ $(INCLUDE_AESIMP_DIR)
 
 # Test target
 test: test_binaries
 	@echo "Running tests..."
 	@for test_file in $(BIN_DIR)/*test*; do \
-		echo "Running $$test_file"; \
-		$$test_file; \
+		if [ -x "$$test_file" ]; then \
+			echo "Running $$test_file"; \
+			$$test_file; \
+		fi \
 	done
 
 # Clean target
 clean:
-	rm -rf $(BUILD_DIR)/*.o $(LIB_DIR)/*.a $(LIB_DIR)/*.so $(BIN_DIR)/*
+	rm -f $(BUILD_DIR)/*.o
+	rm -f $(BIN_DIR)/*
 
 # Phony targets
-.PHONY: all test_binaries test clean
+.PHONY: all test_binaries test copy_headers clean
 

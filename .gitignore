@@ -1,2 +1,9 @@
 // ignore vscode settings
 .vscode
+
+
+// ignore node_modules
+bin
+build
+include
+lib
