@@ -226,6 +226,9 @@ void AES::AddKey(uint32_t *input, int round)
     input[3] = input[3] ^ expkey[round * 4 + 3];
 }
 
+// input: unsigned int, output: unsigned int
+// input: unsigned char, output: unsigned char
+// bufsize: int (in bytes only)
 template <typename T>
 bool AES::encrypt(T *input, T *output, int bufsize)
 {
@@ -238,12 +241,14 @@ bool AES::encrypt(T *input, T *output, int bufsize)
     }
     for (int i = 0; i < bufsize; i += 4)
     {
-        encryptBlock((uint32_t *)(input + i), (uint32_t *)(output + i));
+        encryptBlock((uint32_t *)(input) + i, (uint32_t *)(output) + i);
     }
     return 1;
 }
 
-
+// input: unsigned int, output: unsigned int
+// input: unsigned char, output: unsigned char
+// bufsize: int (in bytes only)
 template <typename T>
 bool AES::decrypt(T *input, T *output, int bufsize)
 {
@@ -256,14 +261,17 @@ bool AES::decrypt(T *input, T *output, int bufsize)
     }
     for (int i = 0; i < bufsize; i += 4)
     {
-        decryptBlock((uint32_t *)(input + i), (uint32_t *)(output + i));
+        decryptBlock((uint32_t *)(input) + i, (uint32_t *)(output) + i);
     }
     return 1;
 }
 
 // Explicit instantiation for required types
 template bool AES::encrypt<unsigned int>(unsigned int* input, unsigned int* output, int bufsize);
+template bool AES::encrypt<unsigned char>(unsigned char* input, unsigned char* output, int bufsize);
 template bool AES::decrypt<unsigned int>(unsigned int* input, unsigned int* output, int bufsize);
+template bool AES::decrypt<unsigned char>(unsigned char* input, unsigned char* output, int bufsize);
+
 
 bool AES::encryptBlock(uint32_t *input, uint32_t *output)
 {
