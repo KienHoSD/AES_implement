@@ -9,7 +9,6 @@ To use this implementation, follow these steps:
 1. Clone the repository: `git clone https://github.com/KienHoSD/AES_implement.git`
 2. Navigate to the project directory: `cd AES_implement`
 3. Build the project using the provided Makefile: `make`
-4. Run the AES encryption/decryption program: `./aes`
 
 ## Makefile
 
@@ -17,7 +16,6 @@ The Makefile included in this repository provides an easy way to build the proje
 
 - `all` (default): Builds the AES program.
 - `clean`: Removes the compiled binaries and object files.
-- `run`: Runs the AES program.
 
 You can use these targets by running `make <target>` in the project directory.
 
