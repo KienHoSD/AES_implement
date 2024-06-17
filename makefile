@@ -88,8 +88,6 @@ benchmark: test_binaries
 			$$benchmark_file; \
 		fi \
 	done
-	@echo "Copying benchmark binaries to $(BENCHMARK_DIR)..."
-	cp $(BIN_DIR)/*benchmark* $(BENCHMARK_DIR)/
 
 # Clean target
 clean:

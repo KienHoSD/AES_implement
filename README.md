@@ -14,8 +14,10 @@ To use this implementation, follow these steps:
 
 The Makefile included in this repository provides an easy way to build the project. It contains the following targets:
 
-- `all` (default): Builds the AES program.
+- `all` (default): Builds the AES program, the test program, and the benchmark program.
 - `clean`: Removes the compiled binaries and object files.
+- `test`: Run the test program.
+- `benchmark`: Run the benchmark program.
 
 You can use these targets by running `make <target>` in the project directory.
 
