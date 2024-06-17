@@ -46,12 +46,15 @@ int main()
   const char iv[] = "0123456789abcdefdeadbeefdeadbeef";
 
 #ifdef _WIN32
-  std::ofstream results("benchmark_results_win.csv", std::ios::out | std::ios::trunc);
+  std::ofstream results_encrypt("benchmark_results_enc_win.csv");
+  std::ofstream results_decrypt("benchmark_results_dec_win.csv");
 #else
-  std::ofstream results("benchmark_results_linux.csv");
+  std::ofstream results_encrypt("benchmark_results_enc_linux.csv");
+  std::ofstream results_decrypt("benchmark_results_dec_linux.csv");
 #endif
 
-  results << "Size(Bytes),Time(Microseconds)\n";
+  results_encrypt << "Size(Bytes),Time(Microseconds)\n";
+  results_decrypt << "Size(Bytes),Time(Microseconds)\n";
 
   std::cout << "Start speedtest" << std::endl;
 
@@ -66,18 +69,34 @@ int main()
     size += padding;
     unsigned char *plain = getRandomPlain(size);
     unsigned char *out = new unsigned char[size];
-
-    unsigned long start = getMicroseconds();
+    unsigned char *recovered = new unsigned char[size];
+    
+    // Encryption
+    unsigned long start_enc = getMicroseconds();
     aes.encrypt(plain, out, nullptr, size);
-    unsigned long delta = getMicroseconds() - start;
+    unsigned long delta_enc = getMicroseconds() - start_enc;
 
-    results << size << "," << delta << "\n";
+    // Decryption
+    unsigned long start_dec = getMicroseconds();
+    aes.decrypt(out, recovered, nullptr, size);
+    unsigned long delta_dec = getMicroseconds() - start_dec;
+
+    // Check if the decryption was successful
+    if (memcmp(plain, recovered, size) != 0)
+    {
+      std::cerr << "Decryption failed!" << std::endl;
+      return 1;
+    }
+
+    results_encrypt << size << "," << delta_enc << "\n";
+    results_decrypt << size << "," << delta_dec << "\n";
 
     delete[] plain;
     delete[] out;
+    delete[] recovered;
   }
 
-  results.close();
+  results_encrypt.close();
   std::cout << "Benchmark completed." << std::endl;
 
   return 0;

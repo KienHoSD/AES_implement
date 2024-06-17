@@ -79,11 +79,22 @@ test: test_binaries
 		fi \
 	done
 
+# Benchmark target
+benchmark: test_binaries
+	@echo "Running benchmarks..."
+	@for benchmark_file in $(BIN_DIR)/*benchmark*; do \
+		if [ -x "$$benchmark_file" ]; then \
+			echo "Running $$benchmark_file"; \
+			$$benchmark_file; \
+		fi \
+	done
+	@echo "Copying benchmark binaries to $(BENCHMARK_DIR)..."
+	cp $(BIN_DIR)/*benchmark* $(BENCHMARK_DIR)/
+
 # Clean target
 clean:
 	rm -f $(BUILD_DIR)/*.o
 	rm -f $(BIN_DIR)/*
 
 # Phony targets
-.PHONY: all test_binaries test copy_headers clean
-
+.PHONY: all test_binaries test benchmark copy_headers clean
