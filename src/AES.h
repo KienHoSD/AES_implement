@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include "helper.h"
+#include "padding.h"
 #include <iostream>
 #include <cstring>
 
@@ -11,10 +12,10 @@ class AES
 public:
   AES(const char *key);
   ~AES();
-  template <typename T>
-  bool encrypt(T *input, T*output, int bufsize);
-  template <typename T>
-  bool decrypt(T *input, T *output, int bufsize);
+  bool encrypt(unsigned char *input, unsigned char *output, int bufsize);
+  bool decrypt(unsigned char *input, unsigned char *output, int bufsize);
+  bool encryptFile(const char *filein, const char *fileout, int bufsize);
+  bool decryptFile(const char *filein, const char *fileout, int bufsize);
 
 protected:
   static const unsigned char Sbox[256];
@@ -37,6 +38,7 @@ protected:
   void invMixcolumns(uint32_t *input);
   void AddKey(uint32_t *input, int round);
   void KeyExpansion();
+  void Transpose(uint32_t *input);
 
   uint32_t *expkey = nullptr;
   int NumRounds;

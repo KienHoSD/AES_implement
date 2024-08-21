@@ -1,10 +1,12 @@
 #include "AES.h"
 
+using std::cout;
+using std::endl;
 /*AES state layout
-1 5 9 13
-2 6 10 14
-3 7 11 15
-4 8 12 16
+1  2  3  4
+5  6  7  8
+9  10 11 12
+13 14 15 16
 
 does improve speed for mixcolumns and shiftrows
 */
@@ -176,22 +178,21 @@ void AES::invSubbytes(uint32_t *input)
 
 void AES::Shiftrows(uint32_t *input)
 {
-    uint32_t temp[4];
-    memcpy(temp, input, 16);
-    input[0] = (((temp[0] >> 24) & 0xFF) << 24) + (((temp[1] >> 16) & 0xFF) << 16) + (((temp[2] >> 8) & 0xFF) << 8) + (temp[3] & 0xFF);
-    input[1] = (((temp[1] >> 24) & 0xFF) << 24) + (((temp[2] >> 16) & 0xFF) << 16) + (((temp[3] >> 8) & 0xFF) << 8) + (temp[0] & 0xFF);
-    input[2] = (((temp[2] >> 24) & 0xFF) << 24) + (((temp[3] >> 16) & 0xFF) << 16) + (((temp[0] >> 8) & 0xFF) << 8) + (temp[1] & 0xFF);
-    input[3] = (((temp[3] >> 24) & 0xFF) << 24) + (((temp[0] >> 16) & 0xFF) << 16) + (((temp[1] >> 8) & 0xFF) << 8) + (temp[2] & 0xFF);
+    Transpose(input);
+    input[1] = (input[1] << 8) + (input[1] >> 24);
+    input[2] = (input[2] << 16) + (input[2] >> 16);
+    input[3] = (input[3] << 24) + (input[3] >> 8);
+    Transpose(input);
 }
 
 void AES::invShiftrows(uint32_t *input)
 {
-    uint32_t temp[4];
-    memcpy(temp, input, 16);
-    input[0] = (((temp[0] >> 24) & 0xFF) << 24) + (((temp[3] >> 16) & 0xFF) << 16) + (((temp[2] >> 8) & 0xFF) << 8) + (temp[1] & 0xFF);
-    input[1] = (((temp[1] >> 24) & 0xFF) << 24) + (((temp[0] >> 16) & 0xFF) << 16) + (((temp[3] >> 8) & 0xFF) << 8) + (temp[2] & 0xFF);
-    input[2] = (((temp[2] >> 24) & 0xFF) << 24) + (((temp[1] >> 16) & 0xFF) << 16) + (((temp[0] >> 8) & 0xFF) << 8) + (temp[3] & 0xFF);
-    input[3] = (((temp[3] >> 24) & 0xFF) << 24) + (((temp[2] >> 16) & 0xFF) << 16) + (((temp[1] >> 8) & 0xFF) << 8) + (temp[0] & 0xFF);
+    Transpose(input);
+    input[0] = input[0];
+    input[1] = (input[1] >> 8) + (input[1] << 24);
+    input[2] = (input[2] >> 16) + (input[2] << 16);
+    input[3] = (input[3] >> 24) + (input[3] << 8);
+    Transpose(input);
 }
 
 void AES::Mixcolumns(uint32_t *input)
@@ -226,123 +227,99 @@ void AES::AddKey(uint32_t *input, int round)
     input[3] = input[3] ^ expkey[round * 4 + 3];
 }
 
+void AES::Transpose(uint32_t *input){
+    uint32_t* temp = new uint32_t[4];
+    memcpy(temp, input, 16);
+    input[0] = (temp[0] & 0xFF000000) + ((temp[1] & 0xFF000000) >> 8) + ((temp[2] & 0xFF000000) >> 16) + ((temp[3] & 0xFF000000) >> 24);
+    input[1] = ((temp[0] & 0x00FF0000) << 8) + (temp[1] & 0x00FF0000) + ((temp[2] & 0x00FF0000) >> 8) + ((temp[3] & 0x00FF0000) >> 16);
+    input[2] = ((temp[0] & 0x0000FF00) << 16) + ((temp[1] & 0x0000FF00) << 8) + (temp[2] & 0x0000FF00) + ((temp[3] & 0x0000FF00) >> 8);
+    input[3] = ((temp[0] & 0x000000FF) << 24) + ((temp[1] & 0x000000FF) << 16) + ((temp[2] & 0x000000FF) << 8) + (temp[3] & 0x000000FF);
+    delete[] temp;
+    temp = nullptr;
+}
+
 // input: unsigned int, output: unsigned int
 // input: unsigned char, output: unsigned char
 // bufsize: int (in bytes only)
-template <typename T>
-bool AES::encrypt(T *input, T *output, int bufsize)
+bool AES::encrypt(unsigned char *input, unsigned char *output, int bufsize)
 {
-    // bufsize is in bytes
-    bufsize /= 4;
-
-    if (bufsize % 4 != 0)
+    if (bufsize % 16 != 0)
     {
         return 0;
     }
-    for (int i = 0; i < bufsize; i += 4)
+
+    uint32_t *tempinput = new uint32_t[4];
+    uint32_t *tempoutput = new uint32_t[4];
+
+    for (int i = 0; i < bufsize; i += 16)
     {
-        encryptBlock((uint32_t *)(input) + i, (uint32_t *)(output) + i);
+        ucharToUint32(input + i, tempinput, 4);
+        encryptBlock(tempinput, tempoutput);
+        Uint32ToUchar(tempoutput, output + i, 4);
     }
+
+    delete[] tempinput;
+    delete[] tempoutput;
+
     return 1;
 }
 
 // input: unsigned int, output: unsigned int
 // input: unsigned char, output: unsigned char
 // bufsize: int (in bytes only)
-template <typename T>
-bool AES::decrypt(T *input, T *output, int bufsize)
+bool AES::decrypt(unsigned char *input, unsigned char *output, int bufsize)
 {
-    // bufsize is in bytes
-    bufsize /= 4;
-
-    if (bufsize % 4 != 0)
+    if (bufsize % 16 != 0)
     {
         return 0;
     }
-    for (int i = 0; i < bufsize; i += 4)
+
+    uint32_t *tempinput = new uint32_t[4];
+    uint32_t *tempoutput = new uint32_t[4];
+    for (int i = 0; i < bufsize; i += 16)
     {
-        decryptBlock((uint32_t *)(input) + i, (uint32_t *)(output) + i);
+        ucharToUint32(input + i, tempinput, 4);
+        decryptBlock(tempinput, tempoutput);
+        Uint32ToUchar(tempoutput, output + i, 4);
     }
+
+    delete[] tempinput;
+    delete[] tempoutput;
+
     return 1;
 }
-
-// Explicit instantiation for required types
-template bool AES::encrypt<unsigned int>(unsigned int* input, unsigned int* output, int bufsize);
-template bool AES::encrypt<unsigned char>(unsigned char* input, unsigned char* output, int bufsize);
-template bool AES::decrypt<unsigned int>(unsigned int* input, unsigned int* output, int bufsize);
-template bool AES::decrypt<unsigned char>(unsigned char* input, unsigned char* output, int bufsize);
-
 
 bool AES::encryptBlock(uint32_t *input, uint32_t *output)
 {
     memcpy(output, input, 16); // Copy input to output (buffer size is in bytes)
-
-    // Add Key
     AddKey(output, 0);
-
     for (int round = 1; round < NumRounds; round++)
     {
-        // Subbytes
         Subbytes(output);
-
-        // Shiftrows
-
         Shiftrows(output);
-
-        // Mixcolums
-
         Mixcolumns(output);
-
-        // Add Key
-
         AddKey(output, round);
     }
-    // Last Subbytes
     Subbytes(output);
-
-    // Last Shiftrow
-
     Shiftrows(output);
-
-    // Last Add Key
-
     AddKey(output, NumRounds);
-
     return 1;
 }
 
 bool AES::decryptBlock(uint32_t *input, uint32_t *output)
 {
     memcpy(output, input, 16); // Copy input to output (buffer size is in bytes)
-
-    // Add Key
     AddKey(output, NumRounds);
-
     invShiftrows(output);
-
     invSubbytes(output);
-
     for (int round = NumRounds - 1; round > 0; round--)
     {
-        // Add Key
         AddKey(output, round);
-
-        // Mixcolums
-
         invMixcolumns(output);
-
-        // Shiftrows
-
         invShiftrows(output);
-
-        // Subbytes
-
         invSubbytes(output);
     }
-
-    // Last Add Key
     AddKey(output, 0);
-
     return 1;
 }
 
@@ -355,10 +332,100 @@ void AES::KeyExpansion()
         if (i % 4 == 0)
         {
             temp = ((Sbox[(temp >> 16) & 0xFF]) << 24) + ((Sbox[(temp >> 8) & 0xFF]) << 16) + ((Sbox[temp & 0xFF]) << 8) + (Sbox[(temp >> 24) & 0xFF]);
-            temp = temp ^ Rcon[i / 4];
+            temp = temp ^ (Rcon[i / 4] << 24);
         }
         expkey[i] = expkey[i - 4] ^ temp;
     }
+}
+
+bool AES::encryptFile(const char *filein, const char *fileout, int bufsize)
+{
+  FILE *fin = fopen(filein, "rb");
+  FILE *fout = fopen(fileout, "wb");
+
+  if (fin == nullptr)
+  {
+    cout << "Error: Cannot open input file" << endl;
+    return 0;
+  }
+
+  if (fout == nullptr)
+  {
+    cout << "Error: Cannot open output file" << endl;
+    return 0;
+  }
+
+  unsigned char *inbuf = new unsigned char[bufsize];
+  unsigned char *outbuf = new unsigned char[bufsize];
+  int buflen;
+
+  while ((buflen = fread(inbuf, 1, bufsize, fin)) == bufsize)
+  {
+    encrypt(inbuf, outbuf, buflen);
+    fwrite(outbuf, 1, buflen, fout);
+  }
+
+  // buflen changed after padding
+  if(!pad(inbuf, buflen, 16)){
+    std::cerr << "Error: Padding failed" << std::endl;
+  }
+  encrypt(inbuf, outbuf, buflen);
+  fwrite(outbuf, 1, buflen, fout);
+
+  delete[] inbuf;
+  inbuf = nullptr;
+  delete[] outbuf;
+  outbuf = nullptr;
+
+  fclose(fin);
+  fclose(fout);
+
+  return true;
+}
+
+bool AES::decryptFile(const char *filein, const char *fileout, int bufsize)
+{
+  FILE *fin = fopen(filein, "rb");
+  FILE *fout = fopen(fileout, "wb");
+
+  if (fin == nullptr)
+  {
+    cout << "Error: Cannot open input file" << endl;
+    return 0;
+  }
+
+  if (fout == nullptr)
+  {
+    cout << "Error: Cannot open output file" << endl;
+    return 0;
+  }
+
+  unsigned char *inbuf = new unsigned char[bufsize];
+  unsigned char *outbuf = new unsigned char[bufsize];
+  int buflen;
+
+  while ((buflen = fread(inbuf, 1, bufsize, fin)) == bufsize)
+  {
+    decrypt(inbuf, outbuf, buflen);
+    fwrite(outbuf, 1, buflen, fout);
+  }
+
+  // deal with the last block
+  decrypt(inbuf, outbuf, buflen);
+
+  // unpad the last block
+  unpad(outbuf, buflen, 16);
+  fwrite(outbuf, 1, buflen, fout);
+
+  delete[] inbuf;
+  inbuf = nullptr;
+  delete[] outbuf;
+  outbuf = nullptr;
+
+  fclose(fin);
+  fclose(fout);
+
+  return true;
 }
 
 AES::AES(const char *key)
