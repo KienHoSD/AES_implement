@@ -7,13 +7,12 @@
 bool checkPadding(const unsigned char *input, int &size, int block_size){
   int padding = input[size - 1] & 0xff;
   if(padding > block_size){
-    // std::cout << "Error: Invalid padding" << std::endl;
+    std::cerr << "Error: Invalid padding" << '\n';
     return 0;
   }
-
   for(int i = 0; i < padding; i++){
     if((input[size - 1] & 0xff) != padding){
-      // std::cout << "Error: Invalid padding" << std::endl;
+      std::cerr << "Error: Invalid padding" << '\n';
       return 0;
     }
   }

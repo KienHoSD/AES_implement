@@ -1,6 +1,8 @@
 #include "AES_CBC.h"
 
 using std::cout;
+using std::cerr;
+using std::clog;
 using std::endl;
 
 AES_CBC::AES_CBC(const char *key, const char *iv) : AES(key)
@@ -10,7 +12,7 @@ AES_CBC::AES_CBC(const char *key, const char *iv) : AES(key)
 
   if (iv == nullptr)
   {
-    cout << "Warning: IV is not given or declared" << endl;
+    clog << "Warning: IV is not given or declared" << endl;
   }
   else
   {
@@ -36,7 +38,7 @@ bool AES_CBC::updateIV(const char *iv)
 {
   if (iv == nullptr && IV == nullptr)
   {
-    cout << "Warning: IV is not given or declared" << endl;
+    clog << "Warning: IV is not given or declared" << endl;
     return false;
   }
 
@@ -58,7 +60,7 @@ bool AES_CBC::encrypt(unsigned char *input, unsigned char *output, const char *i
 {
   if (bufsize % 16 != 0 || bufsize == 0)
   {
-    cout << "Error: bufsize must be a multiple of 16 bytes and not zero" << endl;
+    cerr << "Error: Buffer size must be a multiple of 16" << endl;
     return false;
   }
 
@@ -84,7 +86,7 @@ bool AES_CBC::decrypt(unsigned char *input, unsigned char *output, const char *i
 {
   if (bufsize % 16 != 0 || bufsize == 0)
   {
-    cout << "Error: bufsize must be a multiple of 16 bytes and not zero" << endl;
+    cerr << "Error: Buffer size must be a multiple of 16 bytes" << endl;
     return false;
   }
   updateIV(iv);
@@ -114,13 +116,13 @@ bool AES_CBC::encryptFile(const char *filein, const char *fileout, const char *i
 
   if (fin == nullptr)
   {
-    cout << "Error: Cannot open input file" << endl;
+    cerr << "Error: Cannot open input file" << endl;
     return 0;
   }
 
   if (fout == nullptr)
   {
-    cout << "Error: Cannot open output file" << endl;
+    cerr << "Error: Cannot open output file" << endl;
     return 0;
   }
 
@@ -135,7 +137,7 @@ bool AES_CBC::encryptFile(const char *filein, const char *fileout, const char *i
   }
 
   if(!pad(inbuf, buflen, 16)){
-    std::cerr << "Error: Padding failed" << std::endl;
+    cerr << "Error: Padding failed" << endl; // this error should never happen
   }
   encrypt(inbuf, outbuf, nullptr, buflen);
   fwrite(outbuf, 1, buflen, fout);
@@ -160,13 +162,13 @@ bool AES_CBC::decryptFile(const char *filein, const char *fileout, const char *i
 
   if (fin == nullptr)
   {
-    cout << "Error: Cannot open input file" << endl;
+    cerr << "Error: Cannot open input file" << endl;
     return 0;
   }
 
   if (fout == nullptr)
   {
-    cout << "Error: Cannot open output file" << endl;
+    cerr << "Error: Cannot open output file" << endl;
     return 0;
   }
 

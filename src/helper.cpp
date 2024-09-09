@@ -1,5 +1,23 @@
 #include "helper.h"
 
+// XOR two uint32_t arrays
+// input1: first input array
+// input2: second input array
+// output: output array
+// size: size of input arrays
+template <typename T>
+void Xor(T *input1, T *input2, T *output, int size)
+{
+  for (int i = 0; i < size; i++)
+  {
+    output[i] = input1[i] ^ input2[i];
+  }
+}
+
+// Explicit instantiation of Xor
+template void Xor<uint32_t>(uint32_t *input1, uint32_t *input2, uint32_t *output, int size);
+template void Xor<unsigned char>(unsigned char *input1, unsigned char *input2, unsigned char *output, int size);
+
 // Print hex values of an array
 // input: input array
 // size: size of input array

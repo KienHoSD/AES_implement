@@ -266,23 +266,19 @@ bool AES::encrypt(unsigned char *input, unsigned char *output, int bufsize)
 {
     if (bufsize % 16 != 0)
     {
-        throw "Error: Buffer size is not a multiple of 16";
+        std::cerr << "Error: Buffer size is not a multiple of 16" << '\n';
         return 0;
     }
-
     uint32_t *tempinput = new uint32_t[4];
     uint32_t *tempoutput = new uint32_t[4];
-
     for (int i = 0; i < bufsize; i += 16)
     {
         ucharToUint32(input + i, tempinput, 4);
         encryptBlock(tempinput, tempoutput);
         Uint32ToUchar(tempoutput, output + i, 4);
     }
-
     delete[] tempinput;
     delete[] tempoutput;
-
     return 1;
 }
 
@@ -293,10 +289,9 @@ bool AES::decrypt(unsigned char *input, unsigned char *output, int bufsize)
 {
     if (bufsize % 16 != 0)
     {
-        throw "Error: Buffer size is not a multiple of 16";
+        std::cerr << "Error: Buffer size is not a multiple of 16" << '\n';
         return 0;
     }
-
     uint32_t *tempinput = new uint32_t[4];
     uint32_t *tempoutput = new uint32_t[4];
     for (int i = 0; i < bufsize; i += 16)
@@ -305,10 +300,8 @@ bool AES::decrypt(unsigned char *input, unsigned char *output, int bufsize)
         decryptBlock(tempinput, tempoutput);
         Uint32ToUchar(tempoutput, output + i, 4);
     }
-
     delete[] tempinput;
     delete[] tempoutput;
-
     return 1;
 }
 
@@ -368,13 +361,13 @@ bool AES::encryptFile(const char *filein, const char *fileout, int bufsize)
 
   if (fin == nullptr)
   {
-    throw "Error: Cannot open input file";
+    std::cerr << "Error: Cannot open input file" << '\n';
     return 0;
   }
 
   if (fout == nullptr)
   {
-    throw "Error: Cannot open output file";
+    std::cerr << "Error: Cannot open output file" << '\n';
     return 0;
   }
 
@@ -390,7 +383,7 @@ bool AES::encryptFile(const char *filein, const char *fileout, int bufsize)
 
   // buflen changed after padding
   if(!pad(inbuf, buflen, 16)){
-    std::cerr << "Error: Padding failed" << std::endl;
+    std::cerr << "Error: Padding failed" << std::endl; // this should never happen
   }
   encrypt(inbuf, outbuf, buflen);
   fwrite(outbuf, 1, buflen, fout);
@@ -413,13 +406,13 @@ bool AES::decryptFile(const char *filein, const char *fileout, int bufsize)
 
   if (fin == nullptr)
   {
-    throw "Error: Cannot open input file";
+    std::cerr << "Error: Cannot open input file" << '\n';
     return 0;
   }
 
   if (fout == nullptr)
   {
-    throw "Error: Cannot open output file";
+    std::cerr << "Error: Cannot open output file" << '\n';
     return 0;
   }
 
@@ -437,7 +430,9 @@ bool AES::decryptFile(const char *filein, const char *fileout, int bufsize)
   decrypt(inbuf, outbuf, buflen);
 
   // unpad the last block
-  unpad(outbuf, buflen, 16);
+  if(unpad(outbuf, buflen, 16) == false){
+    std::cerr << "Error: Unpadding failed" << std::endl; // this should never happen
+  }
   fwrite(outbuf, 1, buflen, fout);
 
   delete[] inbuf;

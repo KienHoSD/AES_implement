@@ -4,12 +4,12 @@
 #include <iostream>
 #include <cstdint>
 
-// Xor two uint32_t arrays
+// XOR two uint32_t arrays
 // input1: first input array
 // input2: second input array
 // output: output array
 // size: size of input arrays
-template<typename T>
+template <typename T>
 void Xor(T *input1, T *input2, T *output, int size);
 
 // Print hex values of an array
@@ -36,6 +36,10 @@ void convertHexToUChar(const char *hex, unsigned char *output, int size);
 // size: size of input array
 void ucharToUint32(unsigned char *input, uint32_t *output, int size);
 
+// big endian uint32_t to unsigned char
+// input: input uint32_t array
+// output: output unsigned char array
+// size: size of input array
 void Uint32ToUchar(uint32_t *input, unsigned char *output, int size);
 
 #endif
