@@ -266,6 +266,7 @@ bool AES::encrypt(unsigned char *input, unsigned char *output, int bufsize)
 {
     if (bufsize % 16 != 0)
     {
+        throw "Error: Buffer size is not a multiple of 16";
         return 0;
     }
 
@@ -292,6 +293,7 @@ bool AES::decrypt(unsigned char *input, unsigned char *output, int bufsize)
 {
     if (bufsize % 16 != 0)
     {
+        throw "Error: Buffer size is not a multiple of 16";
         return 0;
     }
 
@@ -366,13 +368,13 @@ bool AES::encryptFile(const char *filein, const char *fileout, int bufsize)
 
   if (fin == nullptr)
   {
-    cout << "Error: Cannot open input file" << endl;
+    throw "Error: Cannot open input file";
     return 0;
   }
 
   if (fout == nullptr)
   {
-    cout << "Error: Cannot open output file" << endl;
+    throw "Error: Cannot open output file";
     return 0;
   }
 
