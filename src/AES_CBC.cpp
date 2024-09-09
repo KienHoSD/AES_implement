@@ -34,29 +34,22 @@ AES_CBC::~AES_CBC()
 
 bool AES_CBC::updateIV(const char *iv)
 {
-  // if IV is not given or declared
   if (iv == nullptr && IV == nullptr)
   {
-    // print warning
     cout << "Warning: IV is not given or declared" << endl;
     return false;
   }
 
-  // if IV is given and not declared
   else if (iv != nullptr && IV == nullptr)
   {
     IV = new u_char[16];
     memcpy(IV, iv, 16);
   }
 
-  // if IV is given but declared
   else if (iv != nullptr && IV != nullptr)
-
   {
     memcpy(IV, iv, 16);
   }
-
-
   return true;
 }
 
@@ -66,17 +59,13 @@ bool AES_CBC::encrypt(unsigned char *input, unsigned char *output, const char *i
   if (bufsize % 16 != 0 || bufsize == 0)
   {
     cout << "Error: bufsize must be a multiple of 16 bytes and not zero" << endl;
-
     return false;
   }
 
   updateIV(iv);
 
-
-  // set tempIV to IV
   tempIV = new u_char[16];
   memcpy(tempIV, IV, 16);
-
 
   for (int i = 0; i < bufsize; i += 16)
   {
@@ -100,7 +89,6 @@ bool AES_CBC::decrypt(unsigned char *input, unsigned char *output, const char *i
   }
   updateIV(iv);
 
-  // set tempIV to IV
   tempIV = new u_char[16];
   memcpy(tempIV, IV, 16);
 
@@ -146,7 +134,6 @@ bool AES_CBC::encryptFile(const char *filein, const char *fileout, const char *i
     fwrite(outbuf, 1, buflen, fout);
   }
 
-  // buflen changed after padding
   if(!pad(inbuf, buflen, 16)){
     std::cerr << "Error: Padding failed" << std::endl;
   }
