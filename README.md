@@ -17,7 +17,7 @@ To use this implementation, follow these steps:
 - Have the same result with the AES-128 encryption and decryption in the `openssl` library.
 - Can encrypt and decrypt buffers of arbitrary length (manual padding is required) and files.
 - Uses a fixed key and IV for encryption and decryption. You can change the key and IV in the `main.cpp` file.
-- Need furthur optimization for better performance (multi-threading, SIMD instructions, etc.).
+- Need furthur optimization for better performance (multi-threading, SIMD instructions, AES-NI, etc...).
 - Is not suitable for production use.
 
 ## Makefile
