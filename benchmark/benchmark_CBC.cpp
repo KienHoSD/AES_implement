@@ -14,7 +14,7 @@
 #endif
 
 // File sizes to test: 2 KB, 10 KB, 20 KB, 50 KB, 100 KB, 500 KB, 2 MB
-std::vector<int> fileSizes = {2 * 1024, 10 * 1024, 20 * 1024, 50 * 1024, 100 * 1024, 500 * 1024, 2000 * 1024};
+std::vector<int> fileSizes = {2 * 1024, 10 * 1024, 20 * 1024, 50 * 1024, 100 * 1024, 500 * 1024};
 const unsigned int MEGABYTE = 1024 * 1024;
 const unsigned int MIN_SIZE = 1024;         // 1 KB
 const unsigned int MAX_SIZE = 2 * MEGABYTE; // 2 MB
